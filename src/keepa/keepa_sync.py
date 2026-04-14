@@ -1223,7 +1223,8 @@ class Keepa:
         domain: str | Domain = "US",
         wait: bool = True,
         n_products: int = 50,
-    ) -> list[str]:
+        stats: bool = False,
+    ) -> list[str] | dict[str, Any]:
         """
         Query the keepa product database to find products matching criteria.
 
@@ -1240,11 +1241,16 @@ class Keepa:
         n_products : int, default: 50
             Maximum number of matching products returned by keepa. This can be
             overridden by the 'perPage' key in ``product_parms``.
+        stats : bool, default: False
+            If ``True``, includes a Search Insights object in the response
+            that aggregates KPIs across the entire result set. When set, the
+            full response dict is returned instead of just the ASIN list.
 
         Returns
         -------
-        list[str]
-            List of ASINs matching the product parameters.
+        list[str] | dict[str, Any]
+            List of ASINs matching the product parameters when ``stats`` is
+            ``False``, or the full response dict when ``stats`` is ``True``.
 
         Notes
         -----
@@ -1314,8 +1320,12 @@ class Keepa:
             "domain": _domain_to_dcode(domain),
             "selection": json.dumps(product_parms_dict),
         }
+        if stats:
+            payload["stats"] = 1
 
         response = self._request("query", payload, wait=wait)
+        if stats:
+            return response
         return response["asinList"]
 
     def deals(

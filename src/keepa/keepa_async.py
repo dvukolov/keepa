@@ -438,7 +438,8 @@ class AsyncKeepa:
         domain: str | Domain = "US",
         wait: bool = True,
         n_products: int = 50,
-    ) -> list[str]:
+        stats: bool = False,
+    ) -> list[str] | dict[str, Any]:
         """Documented by Keepa.product_finder."""
         if isinstance(product_parms, dict):
             product_parms_valid = ProductParams(**product_parms)
@@ -451,8 +452,12 @@ class AsyncKeepa:
             "domain": _domain_to_dcode(domain),
             "selection": json.dumps(product_parms_dict),
         }
+        if stats:
+            payload["stats"] = 1
 
         response = await self._request("query", payload, wait=wait)
+        if stats:
+            return response
         return response["asinList"]
 
     @is_documented_by(Keepa.deals)
